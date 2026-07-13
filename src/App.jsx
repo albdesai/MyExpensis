@@ -9,6 +9,7 @@ import CareerPlanner from './components/CareerPlanner'
 import AccountManager from './components/AccountManager'
 import FamilyDashboard from './components/FamilyDashboard'
 import TourPage from './components/TourPage'
+import ModernHeader from './components/ModernHeader'
 import MobileNav from './components/MobileNav'
 import SettingsPanel from './components/SettingsPanel'
 
@@ -125,35 +126,16 @@ export default function App() {
   const editingData = editingId ? data.find(item => item.id === editingId) : null
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 pb-24 md:pb-8">
-      <div className="max-w-7xl mx-auto">
-        {/* Mobile Header */}
-        <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-4 md:p-6 md:rounded-lg md:shadow-lg md:mb-6 sticky top-0 z-30">
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-            <div>
-              <h1 className="text-3xl md:text-4xl font-bold">💰 Expense Tracker</h1>
-              <p className="text-blue-100 text-sm md:text-base mt-1">Track your finances</p>
-            </div>
-            <div className="flex gap-2 flex-wrap">
-              <button
-                onClick={() => setShowTour(true)}
-                className="flex items-center gap-2 bg-white bg-opacity-20 hover:bg-opacity-30 text-white px-3 py-2 rounded-lg transition text-sm md:text-base"
-              >
-                <HelpCircle size={18} /> Tour
-              </button>
-              <button
-                onClick={downloadData}
-                className="flex items-center gap-2 bg-white bg-opacity-20 hover:bg-opacity-30 text-white px-3 py-2 rounded-lg transition text-sm md:text-base"
-              >
-                <Download size={18} /> Export
-              </button>
-              <label className="flex items-center gap-2 bg-white bg-opacity-20 hover:bg-opacity-30 text-white px-3 py-2 rounded-lg cursor-pointer transition text-sm md:text-base">
-                <Upload size={18} /> Import
-                <input type="file" accept=".json" onChange={uploadData} className="hidden" />
-              </label>
-            </div>
-          </div>
-        </div>
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 pb-24 md:pb-8">
+      {/* Modern Header */}
+      <ModernHeader
+        onTour={() => setShowTour(true)}
+        onExport={downloadData}
+        onImport={uploadData}
+        onSettings={() => {}}
+      />
+
+      <div className="max-w-7xl mx-auto px-4 md:px-0 py-4 md:py-6">
 
         {/* Desktop Tabs */}
         <div className="hidden md:block bg-white rounded-lg shadow-lg mb-6 overflow-hidden">
@@ -241,8 +223,7 @@ export default function App() {
           </div>
         </div>
 
-        {/* Content - Add padding for mobile nav */}
-        <div className="px-4 md:px-0">
+        {/* Content */}
         {activeTab === 'accounts' && (
           <AccountManager
             accounts={accounts}
@@ -288,7 +269,6 @@ export default function App() {
         {activeTab === 'career' && (
           <CareerPlanner data={data} settings={settings} />
         )}
-        </div>
       </div>
 
       {/* Mobile Bottom Navigation */}
