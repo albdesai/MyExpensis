@@ -4,6 +4,7 @@ import react from '@vitejs/plugin-react'
 export default defineConfig({
   base: '/MyExpensis/',
   plugins: [react()],
+  publicDir: 'public',
   server: {
     port: 3000,
     open: true
