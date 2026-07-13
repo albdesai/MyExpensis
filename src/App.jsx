@@ -1,17 +1,21 @@
 import React, { useState, useEffect } from 'react'
-import { Plus, Trash2, Download, Upload, TrendingUp, PieChart as PieChartIcon, BarChart3, Target, AlertCircle, Briefcase } from 'lucide-react'
+import { Plus, Trash2, Download, Upload, TrendingUp, PieChart as PieChartIcon, BarChart3, Target, AlertCircle, Briefcase, Users } from 'lucide-react'
 import MonthlyTracker from './components/MonthlyTracker'
 import CategoryBreakdown from './components/CategoryBreakdown'
 import SummaryDashboard from './components/SummaryDashboard'
 import Charts from './components/Charts'
 import BudgetPlanner from './components/BudgetPlanner'
 import CareerPlanner from './components/CareerPlanner'
+import AccountManager from './components/AccountManager'
+import FamilyDashboard from './components/FamilyDashboard'
 import SettingsPanel from './components/SettingsPanel'
 
 export default function App() {
-  const [activeTab, setActiveTab] = useState('tracker')
+  const [activeTab, setActiveTab] = useState('accounts')
   const [data, setData] = useState([])
   const [editingId, setEditingId] = useState(null)
+  const [accounts, setAccounts] = useState([])
+  const [currentAccount, setCurrentAccount] = useState(null)
   const [settings, setSettings] = useState({
     currency: '₹',
     theme: 'light',
@@ -29,6 +33,14 @@ export default function App() {
     if (savedSettings) {
       setSettings(JSON.parse(savedSettings))
     }
+    const savedAccounts = localStorage.getItem('accounts')
+    if (savedAccounts) {
+      const parsedAccounts = JSON.parse(savedAccounts)
+      setAccounts(parsedAccounts)
+      if (parsedAccounts.length > 0) {
+        setCurrentAccount(parsedAccounts[0])
+      }
+    }
   }, [])
 
   useEffect(() => {
@@ -39,12 +51,35 @@ export default function App() {
     localStorage.setItem('appSettings', JSON.stringify(settings))
   }, [settings])
 
+  useEffect(() => {
+    localStorage.setItem('accounts', JSON.stringify(accounts))
+  }, [accounts])
+
+  const addAccount = (newAccount) => {
+    const updated = [...accounts, newAccount]
+    setAccounts(updated)
+    setCurrentAccount(newAccount)
+  }
+
+  const deleteAccount = (accountId) => {
+    const updated = accounts.filter(acc => acc.id !== accountId)
+    setAccounts(updated)
+    if (currentAccount?.id === accountId) {
+      setCurrentAccount(updated.length > 0 ? updated[0] : null)
+    }
+  }
+
+  const selectAccount = (accountId) => {
+    const account = accounts.find(acc => acc.id === accountId)
+    setCurrentAccount(account)
+  }
+
   const addMonth = (newEntry) => {
     if (editingId) {
-      setData(data.map(item => item.id === editingId ? { ...newEntry, id: editingId } : item))
+      setData(data.map(item => item.id === editingId ? { ...newEntry, id: editingId, accountId: currentAccount?.id } : item))
       setEditingId(null)
     } else {
-      setData([...data, { ...newEntry, id: Date.now() }])
+      setData([...data, { ...newEntry, id: Date.now(), accountId: currentAccount?.id }])
     }
   }
 
@@ -115,6 +150,26 @@ export default function App() {
         <div className="bg-white rounded-lg shadow-lg mb-6 overflow-hidden">
           <div className="flex flex-wrap border-b border-gray-200">
             <button
+              onClick={() => setActiveTab('accounts')}
+              className={`flex items-center gap-2 px-6 py-4 font-semibold transition ${
+                activeTab === 'accounts'
+                  ? 'text-blue-600 border-b-2 border-blue-600'
+                  : 'text-gray-600 hover:text-gray-800'
+              }`}
+            >
+              <Users size={20} /> Accounts
+            </button>
+            <button
+              onClick={() => setActiveTab('family')}
+              className={`flex items-center gap-2 px-6 py-4 font-semibold transition ${
+                activeTab === 'family'
+                  ? 'text-blue-600 border-b-2 border-blue-600'
+                  : 'text-gray-600 hover:text-gray-800'
+              }`}
+            >
+              👨‍👩‍👧‍👦 Family Dashboard
+            </button>
+            <button
               onClick={() => setActiveTab('tracker')}
               className={`flex items-center gap-2 px-6 py-4 font-semibold transition ${
                 activeTab === 'tracker'
@@ -178,6 +233,20 @@ export default function App() {
         </div>
 
         {/* Content */}
+        {activeTab === 'accounts' && (
+          <AccountManager
+            accounts={accounts}
+            onAddAccount={addAccount}
+            onDeleteAccount={deleteAccount}
+            onSelectAccount={selectAccount}
+            currentAccount={currentAccount}
+          />
+        )}
+
+        {activeTab === 'family' && (
+          <FamilyDashboard data={data} accounts={accounts} settings={settings} />
+        )}
+
         {activeTab === 'tracker' && (
           <MonthlyTracker
             data={data}
