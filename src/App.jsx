@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react'
-import { Plus, Trash2, Download, Upload, TrendingUp, PieChart as PieChartIcon, BarChart3, Target, AlertCircle } from 'lucide-react'
+import { Plus, Trash2, Download, Upload, TrendingUp, PieChart as PieChartIcon, BarChart3, Target, AlertCircle, Briefcase } from 'lucide-react'
 import MonthlyTracker from './components/MonthlyTracker'
 import CategoryBreakdown from './components/CategoryBreakdown'
 import SummaryDashboard from './components/SummaryDashboard'
 import Charts from './components/Charts'
 import BudgetPlanner from './components/BudgetPlanner'
+import CareerPlanner from './components/CareerPlanner'
 import SettingsPanel from './components/SettingsPanel'
 
 export default function App() {
@@ -163,6 +164,16 @@ export default function App() {
             >
               <Target size={20} /> Budget Planner
             </button>
+            <button
+              onClick={() => setActiveTab('career')}
+              className={`flex items-center gap-2 px-6 py-4 font-semibold transition ${
+                activeTab === 'career'
+                  ? 'text-blue-600 border-b-2 border-blue-600'
+                  : 'text-gray-600 hover:text-gray-800'
+              }`}
+            >
+              <Briefcase size={20} /> Career Growth
+            </button>
           </div>
         </div>
 
@@ -193,6 +204,10 @@ export default function App() {
 
         {activeTab === 'budget' && (
           <BudgetPlanner data={data} settings={settings} />
+        )}
+
+        {activeTab === 'career' && (
+          <CareerPlanner data={data} settings={settings} />
         )}
       </div>
 
