@@ -1,25 +1,42 @@
 import React, { useState, useEffect } from 'react'
-import { Plus, Trash2, Download, Upload, TrendingUp, PieChart as PieChartIcon, BarChart3 } from 'lucide-react'
+import { Plus, Trash2, Download, Upload, TrendingUp, PieChart as PieChartIcon, BarChart3, Target, AlertCircle } from 'lucide-react'
 import MonthlyTracker from './components/MonthlyTracker'
 import CategoryBreakdown from './components/CategoryBreakdown'
 import SummaryDashboard from './components/SummaryDashboard'
 import Charts from './components/Charts'
+import BudgetPlanner from './components/BudgetPlanner'
+import SettingsPanel from './components/SettingsPanel'
 
 export default function App() {
   const [activeTab, setActiveTab] = useState('tracker')
   const [data, setData] = useState([])
   const [editingId, setEditingId] = useState(null)
+  const [settings, setSettings] = useState({
+    currency: '₹',
+    theme: 'light',
+    budgetLimit: 50000,
+    savingsGoal: 10000,
+    categories: ['Rent', 'Groceries', 'Utilities', 'Transportation', 'Entertainment', 'Healthcare', 'Other']
+  })
 
   useEffect(() => {
     const savedData = localStorage.getItem('expenseData')
     if (savedData) {
       setData(JSON.parse(savedData))
     }
+    const savedSettings = localStorage.getItem('appSettings')
+    if (savedSettings) {
+      setSettings(JSON.parse(savedSettings))
+    }
   }, [])
 
   useEffect(() => {
     localStorage.setItem('expenseData', JSON.stringify(data))
   }, [data])
+
+  useEffect(() => {
+    localStorage.setItem('appSettings', JSON.stringify(settings))
+  }, [settings])
 
   const addMonth = (newEntry) => {
     if (editingId) {
@@ -136,6 +153,16 @@ export default function App() {
             >
               📊 Summary
             </button>
+            <button
+              onClick={() => setActiveTab('budget')}
+              className={`flex items-center gap-2 px-6 py-4 font-semibold transition ${
+                activeTab === 'budget'
+                  ? 'text-blue-600 border-b-2 border-blue-600'
+                  : 'text-gray-600 hover:text-gray-800'
+              }`}
+            >
+              <Target size={20} /> Budget Planner
+            </button>
           </div>
         </div>
 
@@ -163,7 +190,14 @@ export default function App() {
         {activeTab === 'summary' && (
           <SummaryDashboard data={data} />
         )}
+
+        {activeTab === 'budget' && (
+          <BudgetPlanner data={data} settings={settings} />
+        )}
       </div>
+
+      {/* Settings Panel */}
+      <SettingsPanel settings={settings} onSettingsChange={setSettings} />
     </div>
   )
 }
