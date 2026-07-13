@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { Plus, Trash2, Download, Upload, TrendingUp, PieChart as PieChartIcon, BarChart3, Target, AlertCircle, Briefcase, Users, HelpCircle } from 'lucide-react'
+import { Plus, Trash2, Download, Upload, TrendingUp, PieChart as PieChartIcon, BarChart3, Target, AlertCircle, Briefcase, Users, HelpCircle, Menu, X } from 'lucide-react'
 import MonthlyTracker from './components/MonthlyTracker'
 import CategoryBreakdown from './components/CategoryBreakdown'
 import SummaryDashboard from './components/SummaryDashboard'
@@ -9,6 +9,7 @@ import CareerPlanner from './components/CareerPlanner'
 import AccountManager from './components/AccountManager'
 import FamilyDashboard from './components/FamilyDashboard'
 import TourPage from './components/TourPage'
+import MobileNav from './components/MobileNav'
 import SettingsPanel from './components/SettingsPanel'
 
 export default function App() {
@@ -124,38 +125,38 @@ export default function App() {
   const editingData = editingId ? data.find(item => item.id === editingId) : null
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4 md:p-8">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 pb-24 md:pb-8">
       <div className="max-w-7xl mx-auto">
-        {/* Header */}
-        <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
+        {/* Mobile Header */}
+        <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-4 md:p-6 md:rounded-lg md:shadow-lg md:mb-6 sticky top-0 z-30">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div>
-              <h1 className="text-4xl font-bold text-gray-800">💰 Expense Tracker</h1>
-              <p className="text-gray-600 mt-2">Track your salary, EMIs, and expenses</p>
+              <h1 className="text-3xl md:text-4xl font-bold">💰 Expense Tracker</h1>
+              <p className="text-blue-100 text-sm md:text-base mt-1">Track your finances</p>
             </div>
             <div className="flex gap-2 flex-wrap">
               <button
                 onClick={() => setShowTour(true)}
-                className="flex items-center gap-2 bg-purple-500 hover:bg-purple-600 text-white px-4 py-2 rounded-lg transition"
+                className="flex items-center gap-2 bg-white bg-opacity-20 hover:bg-opacity-30 text-white px-3 py-2 rounded-lg transition text-sm md:text-base"
               >
-                <HelpCircle size={20} /> Tour
+                <HelpCircle size={18} /> Tour
               </button>
               <button
                 onClick={downloadData}
-                className="flex items-center gap-2 bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg transition"
+                className="flex items-center gap-2 bg-white bg-opacity-20 hover:bg-opacity-30 text-white px-3 py-2 rounded-lg transition text-sm md:text-base"
               >
-                <Download size={20} /> Export
+                <Download size={18} /> Export
               </button>
-              <label className="flex items-center gap-2 bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg cursor-pointer transition">
-                <Upload size={20} /> Import
+              <label className="flex items-center gap-2 bg-white bg-opacity-20 hover:bg-opacity-30 text-white px-3 py-2 rounded-lg cursor-pointer transition text-sm md:text-base">
+                <Upload size={18} /> Import
                 <input type="file" accept=".json" onChange={uploadData} className="hidden" />
               </label>
             </div>
           </div>
         </div>
 
-        {/* Tabs */}
-        <div className="bg-white rounded-lg shadow-lg mb-6 overflow-hidden">
+        {/* Desktop Tabs */}
+        <div className="hidden md:block bg-white rounded-lg shadow-lg mb-6 overflow-hidden">
           <div className="flex flex-wrap border-b border-gray-200">
             <button
               onClick={() => setActiveTab('accounts')}
@@ -240,7 +241,8 @@ export default function App() {
           </div>
         </div>
 
-        {/* Content */}
+        {/* Content - Add padding for mobile nav */}
+        <div className="px-4 md:px-0">
         {activeTab === 'accounts' && (
           <AccountManager
             accounts={accounts}
@@ -286,7 +288,11 @@ export default function App() {
         {activeTab === 'career' && (
           <CareerPlanner data={data} settings={settings} />
         )}
+        </div>
       </div>
+
+      {/* Mobile Bottom Navigation */}
+      <MobileNav activeTab={activeTab} setActiveTab={setActiveTab} />
 
       {/* Tour Modal */}
       {showTour && <TourPage onClose={() => setShowTour(false)} />}
