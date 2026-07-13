@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { Plus, Trash2, Download, Upload, TrendingUp, PieChart as PieChartIcon, BarChart3, Target, AlertCircle, Briefcase, Users } from 'lucide-react'
+import { Plus, Trash2, Download, Upload, TrendingUp, PieChart as PieChartIcon, BarChart3, Target, AlertCircle, Briefcase, Users, HelpCircle } from 'lucide-react'
 import MonthlyTracker from './components/MonthlyTracker'
 import CategoryBreakdown from './components/CategoryBreakdown'
 import SummaryDashboard from './components/SummaryDashboard'
@@ -8,6 +8,7 @@ import BudgetPlanner from './components/BudgetPlanner'
 import CareerPlanner from './components/CareerPlanner'
 import AccountManager from './components/AccountManager'
 import FamilyDashboard from './components/FamilyDashboard'
+import TourPage from './components/TourPage'
 import SettingsPanel from './components/SettingsPanel'
 
 export default function App() {
@@ -16,6 +17,7 @@ export default function App() {
   const [editingId, setEditingId] = useState(null)
   const [accounts, setAccounts] = useState([])
   const [currentAccount, setCurrentAccount] = useState(null)
+  const [showTour, setShowTour] = useState(false)
   const [settings, setSettings] = useState({
     currency: '₹',
     theme: 'light',
@@ -132,6 +134,12 @@ export default function App() {
               <p className="text-gray-600 mt-2">Track your salary, EMIs, and expenses</p>
             </div>
             <div className="flex gap-2 flex-wrap">
+              <button
+                onClick={() => setShowTour(true)}
+                className="flex items-center gap-2 bg-purple-500 hover:bg-purple-600 text-white px-4 py-2 rounded-lg transition"
+              >
+                <HelpCircle size={20} /> Tour
+              </button>
               <button
                 onClick={downloadData}
                 className="flex items-center gap-2 bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg transition"
@@ -279,6 +287,9 @@ export default function App() {
           <CareerPlanner data={data} settings={settings} />
         )}
       </div>
+
+      {/* Tour Modal */}
+      {showTour && <TourPage onClose={() => setShowTour(false)} />}
 
       {/* Settings Panel */}
       <SettingsPanel settings={settings} onSettingsChange={setSettings} />
