@@ -12,6 +12,7 @@ import TourPage from './components/TourPage'
 import ModernHeader from './components/ModernHeader'
 import MobileNav from './components/MobileNav'
 import SettingsPanel from './components/SettingsPanel'
+import * as storage from './utils/storage'
 
 export default function App() {
   const [activeTab, setActiveTab] = useState('accounts')
@@ -28,35 +29,111 @@ export default function App() {
     categories: ['Rent', 'Groceries', 'Utilities', 'Transportation', 'Entertainment', 'Healthcare', 'Other']
   })
 
+  // Initialize database and load data on app start
   useEffect(() => {
-    const savedData = localStorage.getItem('expenseData')
-    if (savedData) {
-      setData(JSON.parse(savedData))
-    }
-    const savedSettings = localStorage.getItem('appSettings')
-    if (savedSettings) {
-      setSettings(JSON.parse(savedSettings))
-    }
-    const savedAccounts = localStorage.getItem('accounts')
-    if (savedAccounts) {
-      const parsedAccounts = JSON.parse(savedAccounts)
-      setAccounts(parsedAccounts)
-      if (parsedAccounts.length > 0) {
-        setCurrentAccount(parsedAccounts[0])
+    const initializeApp = async () => {
+      try {
+        // Initialize IndexedDB
+        await storage.initDB()
+        console.log('✅ Database initialized')
+
+        // Load accounts from IndexedDB
+        const savedAccounts = await storage.getAccounts()
+        if (savedAccounts && savedAccounts.length > 0) {
+          setAccounts(savedAccounts)
+          setCurrentAccount(savedAccounts[0])
+        }
+
+        // Load expenses from IndexedDB
+        const savedData = await storage.getExpenses()
+        if (savedData && savedData.length > 0) {
+          setData(savedData)
+        }
+
+        // Load settings from IndexedDB
+        const savedSettings = await storage.getSettings()
+        if (savedSettings) {
+          setSettings(savedSettings)
+        }
+
+        console.log('✅ Data loaded from IndexedDB')
+      } catch (error) {
+        console.error('Error initializing app:', error)
+        // Fallback to localStorage if IndexedDB fails
+        const savedData = localStorage.getItem('expenseData')
+        if (savedData) setData(JSON.parse(savedData))
+        const savedSettings = localStorage.getItem('appSettings')
+        if (savedSettings) setSettings(JSON.parse(savedSettings))
+        const savedAccounts = localStorage.getItem('accounts')
+        if (savedAccounts) {
+          const parsedAccounts = JSON.parse(savedAccounts)
+          setAccounts(parsedAccounts)
+          if (parsedAccounts.length > 0) setCurrentAccount(parsedAccounts[0])
+        }
       }
     }
+
+    initializeApp()
   }, [])
 
+  // Save expenses to IndexedDB whenever data changes
   useEffect(() => {
-    localStorage.setItem('expenseData', JSON.stringify(data))
+    if (data.length > 0) {
+      const saveData = async () => {
+        try {
+          for (const expense of data) {
+            const existing = await storage.getExpense(expense.id)
+            if (existing) {
+              await storage.updateExpense(expense)
+            } else {
+              await storage.addExpense(expense)
+            }
+          }
+          console.log('✅ Expenses saved to IndexedDB')
+        } catch (error) {
+          console.error('Error saving expenses:', error)
+          localStorage.setItem('expenseData', JSON.stringify(data))
+        }
+      }
+      saveData()
+    }
   }, [data])
 
+  // Save settings to IndexedDB whenever settings change
   useEffect(() => {
-    localStorage.setItem('appSettings', JSON.stringify(settings))
+    const saveSettings = async () => {
+      try {
+        await storage.saveSettings(settings)
+        console.log('✅ Settings saved to IndexedDB')
+      } catch (error) {
+        console.error('Error saving settings:', error)
+        localStorage.setItem('appSettings', JSON.stringify(settings))
+      }
+    }
+    saveSettings()
   }, [settings])
 
+  // Save accounts to IndexedDB whenever accounts change
   useEffect(() => {
-    localStorage.setItem('accounts', JSON.stringify(accounts))
+    if (accounts.length > 0) {
+      const saveAccounts = async () => {
+        try {
+          for (const account of accounts) {
+            const existing = await storage.getAccount(account.id)
+            if (existing) {
+              await storage.updateAccount(account)
+            } else {
+              await storage.addAccount(account)
+            }
+          }
+          console.log('✅ Accounts saved to IndexedDB')
+        } catch (error) {
+          console.error('Error saving accounts:', error)
+          localStorage.setItem('accounts', JSON.stringify(accounts))
+        }
+      }
+      saveAccounts()
+    }
   }, [accounts])
 
   const addAccount = (newAccount) => {
@@ -96,26 +173,51 @@ export default function App() {
     setActiveTab('tracker')
   }
 
-  const downloadData = () => {
-    const dataStr = JSON.stringify(data, null, 2)
-    const dataBlob = new Blob([dataStr], { type: 'application/json' })
-    const url = URL.createObjectURL(dataBlob)
-    const link = document.createElement('a')
-    link.href = url
-    link.download = `expense_tracker_${new Date().toISOString().split('T')[0]}.json`
-    link.click()
+  const downloadData = async () => {
+    try {
+      // Export all data from IndexedDB
+      const exportedData = await storage.exportAllData()
+      
+      // Create backup in IndexedDB
+      await storage.createBackup(exportedData)
+      
+      // Download as JSON file
+      const dataStr = JSON.stringify(exportedData, null, 2)
+      const dataBlob = new Blob([dataStr], { type: 'application/json' })
+      const url = URL.createObjectURL(dataBlob)
+      const link = document.createElement('a')
+      link.href = url
+      link.download = `MyExpensis_${new Date().toISOString().split('T')[0]}.json`
+      link.click()
+      
+      console.log('✅ Data exported and backup created')
+      alert('✅ Data exported successfully!')
+    } catch (error) {
+      console.error('Error exporting data:', error)
+      alert('Error exporting data. Please try again.')
+    }
   }
 
-  const uploadData = (event) => {
+  const uploadData = async (event) => {
     const file = event.target.files[0]
     if (file) {
       const reader = new FileReader()
-      reader.onload = (e) => {
+      reader.onload = async (e) => {
         try {
           const uploadedData = JSON.parse(e.target.result)
-          setData(uploadedData)
-          alert('Data imported successfully!')
+          
+          // Import data into IndexedDB
+          await storage.importAllData(uploadedData)
+          
+          // Update React state
+          if (uploadedData.accounts) setAccounts(uploadedData.accounts)
+          if (uploadedData.expenses) setData(uploadedData.expenses)
+          if (uploadedData.settings) setSettings(uploadedData.settings)
+          
+          console.log('✅ Data imported successfully')
+          alert('✅ Data imported successfully!')
         } catch (error) {
+          console.error('Error importing data:', error)
           alert('Error importing data. Please check the file format.')
         }
       }
