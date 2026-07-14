@@ -7,7 +7,7 @@ import Charts from './components/Charts'
 import BudgetPlanner from './components/BudgetPlanner'
 import CareerPlanner from './components/CareerPlanner'
 import AccountManager from './components/AccountManager'
-import FamilyDashboard from './components/FamilyDashboard'
+import ImprovedFamilyDashboard from './components/ImprovedFamilyDashboard'
 import TourPage from './components/TourPage'
 import ModernHeader from './components/ModernHeader'
 import MobileNav from './components/MobileNav'
@@ -235,7 +235,7 @@ export default function App() {
         )}
 
         {activeTab === 'family' && (
-          <FamilyDashboard data={data} accounts={accounts} settings={settings} />
+          <ImprovedFamilyDashboard data={data} accounts={accounts} settings={settings} />
         )}
 
         {activeTab === 'tracker' && (
