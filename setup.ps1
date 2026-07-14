@@ -23,7 +23,7 @@ if (Test-Path $projectPath) {
     Write-Host "OK: Project directory exists" -ForegroundColor Green
 } else {
     Set-Location "C:\Users\abhijit.desai\CascadeProjects"
-    ng new myexpensis-angular --routing --style=css --skip-git --package-manager=npm
+    ng new myexpensis-angular --routing --style=css --skip-git --package-manager=npm --skip-ssr --skip-analytics
     Write-Host "OK: Angular project created" -ForegroundColor Green
 }
 
